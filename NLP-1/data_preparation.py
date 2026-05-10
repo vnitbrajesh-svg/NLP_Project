@@ -8,6 +8,7 @@ Stage 1: Data Preparation
 """
 
 import os
+import argparse
 import pandas as pd
 from datasets import Dataset, DatasetDict
 from transformers import AutoTokenizer
@@ -24,6 +25,29 @@ MAX_LENGTH   = 128
 TRAIN_RATIO  = 0.80
 VAL_RATIO    = 0.10
 RANDOM_SEED  = 42
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Prepare and tokenize sentiment dataset")
+    parser.add_argument(
+        "--max-length",
+        type=int,
+        default=MAX_LENGTH,
+        help="Tokenizer max_length",
+    )
+    parser.add_argument(
+        "--output-suffix",
+        type=str,
+        default="",
+        help="Optional suffix for output folder, e.g. ml256",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Optional explicit output directory (overrides --output-suffix)",
+    )
+    return parser.parse_args()
 
 # ── Label map ─────────────────────────────────────────────────────────────────
 LABEL2ID = {"positive": 0, "negative": 1, "neutral": 2}  # matches ProsusAI/finbert native mapping
@@ -55,7 +79,7 @@ def split_data(df: pd.DataFrame):
     return train_df, val_df, test_df
 
 # ── Tokenize ──────────────────────────────────────────────────────────────────
-def build_dataset(train_df, val_df, test_df) -> DatasetDict:
+def build_dataset(train_df, val_df, test_df, max_length: int) -> DatasetDict:
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
     def to_hf(df: pd.DataFrame) -> Dataset:
@@ -69,7 +93,7 @@ def build_dataset(train_df, val_df, test_df) -> DatasetDict:
             batch["text"],
             truncation=True,
             padding="max_length",
-            max_length=MAX_LENGTH,
+            max_length=max_length,
         )
 
     raw = DatasetDict({
@@ -84,12 +108,19 @@ def build_dataset(train_df, val_df, test_df) -> DatasetDict:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    out_dir = os.path.join(_HERE, "data", "tokenized_dataset")
+    args = parse_args()
+    if args.output_dir:
+        out_dir = args.output_dir
+    else:
+        base = "tokenized_dataset_merged"
+        suffix = f"_{args.output_suffix}" if args.output_suffix else ""
+        out_dir = os.path.join(_HERE, "data", f"{base}{suffix}")
     os.makedirs(out_dir, exist_ok=True)
     os.makedirs(os.path.join(_HERE, "results"), exist_ok=True)
 
     df = load_and_clean(DATA_PATH)
     train_df, val_df, test_df = split_data(df)
-    dataset = build_dataset(train_df, val_df, test_df)
+    dataset = build_dataset(train_df, val_df, test_df, args.max_length)
     dataset.save_to_disk(out_dir)
+    print(f"Tokenization max_length: {args.max_length}")
     print(f"Dataset saved to {out_dir}/")

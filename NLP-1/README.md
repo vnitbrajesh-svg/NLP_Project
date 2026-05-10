@@ -143,6 +143,21 @@ Each run of `compare_3way.py` produces four charts in `results/comparison_3way/`
 | `confusion_matrices.png` | 1×3 confusion matrix grid |
 | `improvement_over_bert.png` | Delta over BERT zero-shot baseline |
 
+## Report Summary
+
+The generated reports show a clear ranking difference between the two evaluation sets:
+
+| Dataset | Model | Accuracy | F1 Macro | F1 Weighted | Positive F1 | Negative F1 | Neutral F1 |
+|---|---|---:|---:|---:|---:|---:|---:|
+| PhraseBank held-out | BERT (Baseline) | 0.2737 | 0.2373 | 0.1436 | 0.4080 | 0.3038 | 0.0000 |
+| PhraseBank held-out | BERT (Fine-tuned) | 0.7174 | 0.5691 | 0.6989 | 0.6245 | 0.2564 | 0.8265 |
+| PhraseBank held-out | FinBERT | 0.9757 | 0.9646 | 0.9761 | 0.9780 | 0.9302 | 0.9855 |
+| Collected unseen | BERT (Baseline) | 0.3870 | 0.2657 | 0.2660 | 0.5317 | 0.2654 | 0.0000 |
+| Collected unseen | BERT (Fine-tuned) | 0.7490 | 0.7380 | 0.7381 | 0.8601 | 0.7242 | 0.6296 |
+| Collected unseen | FinBERT | 0.5940 | 0.5707 | 0.5709 | 0.7469 | 0.5866 | 0.3786 |
+
+The reports indicate that FinBERT is the strongest model on the held-out PhraseBank test set, while the fine-tuned BERT model generalises best on the collected unseen data. The zero-shot BERT baseline is consistently the weakest, especially for the neutral class.
+
 ---
 
 ## Plot Training Curves

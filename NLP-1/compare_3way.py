@@ -168,7 +168,17 @@ def predict_bert_baseline(texts: list) -> np.ndarray:
 # ── Text-classification inference (fine-tuned BERT + FinBERT) ─────────────────
 def predict_classifier(model_id: str, tag: str, texts: list) -> np.ndarray:
     print(f"\n[{tag}] Loading: {model_id}")
-    tokenizer = _load_pretrained(AutoTokenizer, model_id)
+    try:
+        tokenizer = _load_pretrained(AutoTokenizer, model_id)
+    except ValueError as e:
+        msg = str(e).lower()
+        if "backend tokenizer" in msg or "sentencepiece" in msg or "tiktoken" in msg:
+            # Some repos only expose a slow tokenizer in certain environments.
+            # Fall back to use_fast=False instead of failing hard.
+            print(f"[{tag}] Fast tokenizer unavailable; retrying with use_fast=False ...")
+            tokenizer = _load_pretrained(AutoTokenizer, model_id, use_fast=False)
+        else:
+            raise
     model     = _load_pretrained(AutoModelForSequenceClassification, model_id)
     clf = pipeline(
         "text-classification",

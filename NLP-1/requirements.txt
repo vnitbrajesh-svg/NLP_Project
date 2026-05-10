@@ -1,5 +1,5 @@
 # ── Deep learning & NLP ───────────────────────────────────────────────────────
-torch>=2.2.0                 # GPU training; install the CUDA build from pytorch.org
+torch>=2.11.0                # GPU training; CUDA 12.8 build installed separately
 transformers>=4.40.0         # BERT, FinBERT, Trainer API
 datasets>=2.19.0             # HuggingFace DatasetDict / tokenized splits
 tokenizers>=0.19.0           # Fast tokenizers (pulled in by transformers)
@@ -21,7 +21,7 @@ requests>=2.31.0             # Downloading LM dictionary
 matplotlib>=3.8.0
 
 # ── Install note ──────────────────────────────────────────────────────────────
-# For GPU support install PyTorch separately:
-#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+# For GPU support (CUDA 12.8) install PyTorch separately:
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 # Then install the rest:
 #   pip install -r requirements.txt
